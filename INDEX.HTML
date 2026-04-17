@@ -1,0 +1,841 @@
+import { useState, useEffect, useRef } from "react";
+
+/* ══════════════════════════════════════════════════
+   PT MAHANA ZIGMA INDONESIA — WEBSITE v3
+   Brand-accurate: DESSY HoMA · ALLYSES · Personal Primary
+   DNA: PRECISE · CONFIDANT · ATTUNED
+══════════════════════════════════════════════════ */
+
+const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Cinzel:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Jost:wght@200;300;400;500&display=swap');`;
+
+const CSS = `
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: #08111A; }
+  ::-webkit-scrollbar-thumb { background: #C9A84C; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  @keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+  @keyframes lineW { from{transform:scaleX(0)} to{transform:scaleX(1)} }
+  @keyframes pulse { 0%,100%{opacity:.3} 50%{opacity:1} }
+
+  .fu1{animation:fadeUp .7s .1s ease both}
+  .fu2{animation:fadeUp .7s .22s ease both}
+  .fu3{animation:fadeUp .7s .36s ease both}
+  .fu4{animation:fadeUp .7s .5s ease both}
+  .fi {animation:fadeIn .5s ease}
+
+  .nav-btn{font-family:'Cinzel',serif;font-size:9px;letter-spacing:2.5px;color:#8899A6;cursor:pointer;transition:color .3s;background:none;border:none;padding:0}
+  .nav-btn:hover,.nav-btn.act{color:#C9A84C}
+
+  .card{transition:all .35s cubic-bezier(.25,.46,.45,.94);cursor:pointer}
+  .card:hover{transform:translateY(-5px);box-shadow:0 20px 50px rgba(0,0,0,.4),0 0 0 1px rgba(201,168,76,.18)}
+
+  .btn-g{font-family:'Cinzel',serif;font-size:9px;letter-spacing:3px;cursor:pointer;transition:all .3s;background:#C9A84C;border:1px solid #C9A84C;color:#08111A;padding:13px 30px;font-weight:600}
+  .btn-g:hover{background:transparent;color:#C9A84C}
+  .btn-o{font-family:'Cinzel',serif;font-size:9px;letter-spacing:3px;cursor:pointer;transition:all .3s;background:transparent;border:1px solid #C9A84C;color:#C9A84C;padding:13px 30px}
+  .btn-o:hover{background:#C9A84C;color:#08111A}
+
+  .dcard{transition:all .3s ease;border:1px solid rgba(201,168,76,.08)}
+  .dcard:hover{border-color:rgba(201,168,76,.3);transform:translateY(-3px)}
+
+  .gold-text{background:linear-gradient(90deg,#C9A84C 0%,#F0D98A 40%,#C9A84C 60%,#E2C87A 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 3s linear infinite}
+
+  .tdot{width:6px;height:6px;border-radius:50%;background:rgba(201,168,76,.3);cursor:pointer;transition:all .3s}
+  .tdot.act{background:#C9A84C;transform:scale(1.4)}
+
+  .overlay{position:fixed;inset:0;background:rgba(8,17,26,.97);z-index:999;display:flex;align-items:center;justify-content:center;animation:fadeIn .3s ease}
+
+  input,textarea{background:rgba(255,255,255,.03);border:1px solid rgba(201,168,76,.2);color:#FAF6EE;font-family:'Jost',sans-serif;font-size:13px;padding:13px 17px;width:100%;outline:none;transition:border-color .3s}
+  input:focus,textarea:focus{border-color:rgba(201,168,76,.55)}
+  input::placeholder,textarea::placeholder{color:rgba(136,153,166,.45)}
+
+  /* BRASS effect for DESSY */
+  .brass{background:linear-gradient(135deg,#B8962E 0%,#D4A843 20%,#E8C060 35%,#C9A030 50%,#B08020 65%,#D4A843 80%,#C9A030 100%)}
+  /* GREEN metallic for ALLYSES */
+  .forest{background:linear-gradient(135deg,#1a4a2a,#2d6e3f,#1a4a2a)}
+`;
+
+// ─── BRAND COLORS ───────────────────────────────
+const B = {
+  bg: "#08111A",
+  navy: "#0D1B2A",
+  gold: "#C9A84C",
+  goldL: "#E2C87A",
+  cream: "#FAF6EE",
+  ash: "#8899A6",
+  // DESSY HoMA — Brass / Navy
+  dessyBg: "#0A1828",
+  dessyBrass: "#C9A030",
+  dessyAccent: "#1A3D6E",
+  // ALLYSES — Forest Green / Navy / Gold
+  allyBg: "#071510",
+  allyGreen: "#1E5C32",
+  allyGreenL: "#2E8B4A",
+  allyNavy: "#0A1628",
+  // Personal Primary — Blue-Green / Ivory
+  theraBg: "#081420",
+  theraBlue: "#1A4A7A",
+  theraGreen: "#2A7A4A",
+  theraIvory: "#F8F4EC",
+};
+
+// ─── DATA ───────────────────────────────────────
+const DNA = [
+  {
+    word:"PRECISE", latin:"Accuratus", icon:"◈", color:"#1E5C32",
+    tagline:"Surgical clarity. Zero waste.",
+    desc:"We do not approximate. Every action, every recommendation, every document is calibrated to the exact need of our client — no more, no less. Precision is our first act of respect.",
+    how:[
+      {u:"DESSY HoMA", t:"ADR clause dalam setiap kontrak sebelum sengketa terjadi. Dispute Risk Scoring berbasis AI. Tidak ada langkah hukum tanpa dasar yang tepat."},
+      {u:"ALLYSES", t:"Satu instruksi cukup. Kami membaca preferensi dan ritme Anda — mengeksekusi tanpa perlu pengulangan atau konfirmasi berulang."},
+      {u:"Personal Primary", t:"Diagnosis berbasis data, bukan kebiasaan. Family Health Roadmap individual yang terukur dan dievaluasi secara berkala."},
+    ],
+  },
+  {
+    word:"CONFIDANT", latin:"Fidus", icon:"◉", color:"#1A3D6E",
+    tagline:"Your trust is sacred to us.",
+    desc:"Three meanings in one word: confident in expertise, confidential in conduct, and a confidant by relationship. What you share with us stays with us — bound by law, ethics, and honour.",
+    how:[
+      {u:"DESSY HoMA", t:"Mediasi tertutup total. NDA wajib semua pihak. Server data sovereign Indonesia. Identitas klien terlindungi sepanjang proses."},
+      {u:"ALLYSES", t:"One Ally, Zero Sharing. Satu relationship manager yang tahu segalanya — tidak menyebarkan apapun. Bound by contract, not just policy."},
+      {u:"Personal Primary", t:"Rekam medis terenkripsi penuh. Diagnosis tidak dibagikan tanpa persetujuan. UU PDP 2022 & HIPAA framework compliant."},
+    ],
+  },
+  {
+    word:"ATTUNED", latin:"Consonans", icon:"◎", color:"#6B4C1E",
+    tagline:"We know you before you speak.",
+    desc:"Being attuned means we move with you — not behind you. We learn your rhythm, anticipate your needs, and personalize every touchpoint until our service feels less like a transaction and more like a relationship that has always known you.",
+    how:[
+      {u:"DESSY HoMA", t:"Penyelesaian yang mempertimbangkan konteks bisnis, relasi, dan tujuan jangka panjang klien — bukan hanya aspek hukum semata."},
+      {u:"ALLYSES", t:"AI yang belajar dari setiap interaksi. Personal Ally yang memahami konteks keluarga, bisnis, dan gaya hidup Anda secara menyeluruh."},
+      {u:"Personal Primary", t:"Dokter yang mengenal riwayat, kekhawatiran, dan tujuan kesehatan Anda — bukan sekadar keluhan hari ini."},
+    ],
+  },
+];
+
+const UNITS_DATA = {
+  dessy: {
+    id:"dessy", name:"DESSY HoMA", code:"DHoMA",
+    full:"Dedicated Expert Settlement Yielding Results",
+    sub:"House of Mediation & Arbitration",
+    tagline:"Resolve Before It Escalates.",
+    taglineID:"Selesaikan Sebelum Meluas.",
+    slogan:"Gravitas · Pactum · Tutela · Arbitrium",
+    taglineSub:"Penyelesaian sengketa yang bermartabat, efisien, dan benar-benar tertutup.",
+    positioning:"Firma ADR & ODR premium yang menjadi mitra strategis korporasi, institusi kesehatan, dan individu dalam mencegah eskalasi sengketa — dengan pendekatan preventif kontraktual, platform digital terenkripsi, dan mediator bersertifikat yang menjaga kerahasiaan total.",
+    bg: B.dessyBg, accent: B.dessyBrass, accentSoft:"rgba(201,160,48,0.15)",
+    iconColor: B.dessyBrass,
+    url:"odrlink.id",
+    services:["Mediasi Komersial & Korporat","Arbitrase Nasional & Internasional","Online Dispute Resolution (ODR)","Healthcare & JKN Medical Dispute","Maritime & Shipping ADR","Family & Inheritance Mediation","Preventive Contract Drafting","Church & Faith Institution ADR","Expert Witness & Legal Opinion"],
+    niches:[
+      {n:"Healthcare & JKN",tag:"Premium Niche",c:"#C9A030"},
+      {n:"Maritime & Shipping",tag:"Premium Niche",c:"#C9A030"},
+      {n:"Corporate Commercial",tag:"Core",c:"#8899A6"},
+      {n:"Family & Inheritance",tag:"Core",c:"#8899A6"},
+      {n:"Church & Faith",tag:"Specialized",c:"#8899A6"},
+      {n:"Fintech & Digital",tag:"Growth",c:"#6AAF6A"},
+    ],
+    platform:{name:"DESSY-AI · ODRLink Platform",url:"odrlink.id",desc:"Platform ODR berbasis AI dengan virtual mediation room terenkripsi end-to-end, integrasi BPJS/SIMRS/HL7 FHIR R4, e-Risalah dan e-Akta Perdamaian digital.",
+      features:["Dispute Risk Assessment (AI-powered)","Virtual mediation room — enkripsi E2E","e-Risalah & e-Akta Perdamaian digital","Integrasi BPJS Kesehatan & SIMRS","ADR clause library & contract templates","Multi-party dashboard — real-time"],
+    },
+    precise:"ADR by design — klausul pencegahan sengketa diintegrasikan ke dalam setiap kontrak sebelum masalah terjadi.",
+    confidant:"Mediasi benar-benar tertutup. NDA wajib. Server sovereign Indonesia. Zero data transfer.",
+    attuned:"Penyelesaian yang mempertimbangkan konteks bisnis dan relasi jangka panjang — bukan hanya aspek hukum.",
+    revenue:["Retainer IDR 25–50 jt/bln","Success Fee","ODR SaaS Institusi","Training & Sertifikasi","Legal Opinion & Expert"],
+  },
+  allyses: {
+    id:"allyses", name:"ALLYSES", code:"APC",
+    full:"Allied Lifestyle & Yielding Solutions for Executive Services",
+    sub:"Premium Concierge",
+    tagline:"Excellence Finds Its Rhythm.",
+    taglineID:"Ketika Keunggulan Menemukan Iramanya.",
+    slogan:"Excellence Finds Its Rhythm",
+    taglineSub:"Layanan concierge white-glove untuk eksekutif, profesional premium, dan keluarga pilihan.",
+    positioning:"ALLYSES adalah layanan concierge personal eksklusif yang membebaskan pikiran dan waktu klien premium — mengurus setiap aspek kehidupan personal dan profesional mereka secara proaktif, tanpa friksi, dan dengan diskresitas mutlak yang hanya bisa dijamin oleh tim yang benar-benar mengenal Anda.",
+    bg: B.allyBg, accent: B.allyGreenL, accentSoft:"rgba(46,139,74,0.12)",
+    iconColor: B.allyGreenL,
+    url:"allyses.id",
+    services:["Errands & Admin Tasks","Residence & Interiors","Healthcare & Wellness","Scheduling & Appointments","Kids & Family Needs","Social & Events","Scholar / Academic Assistance","Legal Assistance","Financial & Banking","Work & Payroll","Flowers & Gifts","Greetings & Gifts"],
+    tiers:[
+      {t:"SILVER",d:"Essential concierge — errands, scheduling, basic lifestyle",c:"#A0A8B0",bg:"rgba(160,168,176,0.1)"},
+      {t:"GOLD",d:"+ Personal lifestyle, family, wellness coordination",c:"#C9A84C",bg:"rgba(201,168,76,0.1)"},
+      {t:"EMERALD",d:"+ 24/7 dedicated Ally, full spectrum, VIP global network",c:"#2E8B4A",bg:"rgba(46,139,74,0.1)"},
+    ],
+    platform:{name:"ALLYSES Concierge App",url:"allyses.id",desc:"Aplikasi concierge yang mempelajari ritme hidup klien — mengantisipasi kebutuhan sebelum diminta, dengan direct line ke Personal Ally 24/7 tanpa call center.",
+      features:["Personal Ally — direct line, bukan call center","AI lifestyle assistant (belajar dari setiap interaksi)","Task & Errand tracking dashboard","Secure document vault","Proactive life calendar & smart alerts","Mahana ecosystem coordination"],
+    },
+    precise:"Satu instruksi cukup. Kami mengeksekusi tanpa follow-up, pengulangan, atau konfirmasi berulang dari Anda.",
+    confidant:"One Ally, Zero Sharing. NDA seluruh tim. No data monetization. Discreet execution by protocol.",
+    attuned:"AI yang belajar dari setiap interaksi — Personal Ally yang mengenal Anda lebih baik dari kalender Anda sendiri.",
+    revenue:["Membership Silver/Gold/Emerald","Service execution fee","Corporate B2B package","Ecosystem referral"],
+  },
+  thera: {
+    id:"thera", name:"Personal Primary", code:"PPHA",
+    full:"Personal Primary Healthcare Assistance",
+    sub:"Klinik Kesehatan Keluarga Integratif",
+    tagline:"Care with Discretion,",
+    tagline2:"Heal with Trust.",
+    taglineID:"Merawat dengan Diskresitas, Menyembuhkan dengan Kepercayaan.",
+    slogan:"Care with Discretion, Heal with Trust",
+    taglineSub:"Pelayanan kesehatan keluarga yang holistik, proaktif, dan benar-benar personal.",
+    positioning:"Personal Primary adalah klinik kesehatan keluarga integratif yang menempatkan pencegahan di atas pengobatan dan privasi di atas segalanya — sebuah sanctuary kesehatan di mana setiap anggota keluarga dikenal secara mendalam dan dirawat secara utuh, jiwa dan raga.",
+    bg: B.theraBg, accent: B.theraBlue, accentSoft:"rgba(26,74,122,0.15)",
+    iconColor: "#4A9ECC",
+    url:"theramedicare.id",
+    services:["Preventive Health Protocol","Family Health Roadmap","Telemedicine & Home Visit","Chronic Disease Management","Integrative & Complementary Therapy","Mental & Spiritual Wellness Consultation","Pediatric Developmental Monitoring","Corporate Wellness B2B Program","Medical Second Opinion","BPJS & Insurance Navigation"],
+    pillars:[
+      {p:"Preventive Care",d:"Skrining rutin, deteksi dini, vaksinasi, dan wellness scoring berkala",c:"#2A7A4A"},
+      {p:"Curative Medicine",d:"GP & specialist care, penanganan kondisi akut dan kronis",c:"#1A4A7A"},
+      {p:"Integrative Therapy",d:"Fisioterapi, akupunktur medis, nutrisi klinik, terapi komplementer",c:"#7A4A2A"},
+      {p:"Mental & Spiritual",d:"Konseling, pastoral care, mindfulness, dan dukungan kesehatan jiwa",c:"#4A2A7A"},
+    ],
+    platform:{name:"Personal Primary Health Hub",url:"theramedicare.id",desc:"Platform kesehatan digital dengan EMR FHIR-compliant, telemedicine 24/7, wellness dashboard personal, dan integrasi BPJS Kesehatan serta ekosistem Mahana.",
+      features:["Telemedicine & konsultasi video 24/7","Electronic Medical Record (EMR) — FHIR R4","Personal Wellness Dashboard & Health Score","Family Health Account (satu akun keluarga)","BPJS & asuransi dual-track","Referral koordinasi ke specialist mitra"],
+    },
+    precise:"Wellness Scoring berkala. Family Health Roadmap individual berbasis data. Diagnosis presisi, bukan asumsi.",
+    confidant:"Rekam medis terenkripsi penuh. Role-based access. 'Care with Discretion' bukan tagline — ini janji.",
+    attuned:"Dokter yang mengenal riwayat, konteks keluarga, dan tujuan hidup Anda — bukan sekadar keluhan hari ini.",
+    revenue:["OOP consultation fee","BPJS capitation & klaim","Corporate wellness B2B","Wellness product retail","Telemedicine subscription"],
+  },
+};
+
+const TESTIMONIALS = [
+  {q:"DESSY HoMA menyelesaikan sengketa kontrak senilai 40 miliar dalam 6 minggu. Kerahasiaan penuh yang mereka jaga sepanjang proses adalah nilai yang tidak ternilai.",name:"Direktur Utama",co:"Perusahaan Logistik Nasional",unit:"DESSY HoMA",c:B.dessyBrass},
+  {q:"Satu pesan ke ALLYSES, dan semua urusan perjalanan, akomodasi, serta koordinasi medis terurus sempurna. Saya tidak perlu menelepon siapapun lagi.",name:"Dokter Spesialis Senior",co:"RS Swasta Terkemuka Jakarta",unit:"ALLYSES",c:B.allyGreenL},
+  {q:"Personal Primary bukan klinik biasa. Dokter mereka tahu riwayat seluruh keluarga saya dan selalu satu langkah lebih maju dari masalah kesehatan kami.",name:"CEO",co:"Grup Properti Nasional",unit:"Personal Primary",c:"#4A9ECC"},
+];
+
+// ─── SMALL COMPONENTS ───────────────────────────
+const Div = ({g=true}) => (
+  <div style={{display:"flex",alignItems:"center",gap:"12px",margin:"18px 0"}}>
+    <div style={{flex:1,height:"1px",background:g?"linear-gradient(to right,transparent,#C9A84C44)":"rgba(255,255,255,0.05)"}}/>
+    <span style={{color:"#C9A84C44",fontSize:"7px"}}>✦</span>
+    <div style={{flex:1,height:"1px",background:g?"linear-gradient(to left,transparent,#C9A84C44)":"rgba(255,255,255,0.05)"}}/>
+  </div>
+);
+const SL = ({children,c="#C9A84C"}) => <div style={{fontFamily:"'Cinzel',serif",fontSize:"9px",letterSpacing:"4px",color:c,marginBottom:"14px",opacity:.85}}>{children}</div>;
+const GL = ({c="#C9A84C"}) => <div style={{width:"40px",height:"2px",background:`linear-gradient(to right,${c},transparent)`,marginBottom:"22px"}}/>;
+
+// ─── NAV ────────────────────────────────────────
+function Nav({page,go,menu,setMenu}) {
+  const [sc,setSc] = useState(false);
+  useEffect(()=>{const h=()=>setSc(window.scrollY>40);window.addEventListener("scroll",h);return()=>window.removeEventListener("scroll",h)},[]);
+  const pages = ["HOME","MAHANA","DESSY HOMA","ALLYSES","PERSONAL PRIMARY","CONTACT"];
+  return (
+    <>
+      <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:100,background:sc?"rgba(8,17,26,0.97)":"transparent",borderBottom:sc?"1px solid rgba(201,168,76,0.1)":"none",transition:"all .4s",padding:"0 40px",height:"68px",display:"flex",alignItems:"center",justifyContent:"space-between",backdropFilter:sc?"blur(16px)":"none"}}>
+        <button onClick={()=>go("HOME")} style={{background:"none",border:"none",cursor:"pointer",textAlign:"left"}}>
+          <div style={{fontFamily:"'Cinzel',serif",fontSize:"11px",letterSpacing:"3px",color:B.gold,fontWeight:600}}>MAHANA ZIGMA</div>
+          <div style={{fontFamily:"'Jost',sans-serif",fontSize:"9px",letterSpacing:"2px",color:"#8899A644",marginTop:"2px"}}>PT MAHANA ZIGMA INDONESIA</div>
+        </button>
+        <div style={{display:"flex",gap:"28px",alignItems:"center"}}>
+          {pages.filter(p=>!["HOME","CONTACT"].includes(p)).map(p=>(
+            <button key={p} className={`nav-btn ${page===p?"act":""}`} onClick={()=>go(p)}>{p}</button>
+          ))}
+          <button className="nav-btn" onClick={()=>go("CONTACT")}>CONTACT</button>
+        </div>
+        <button onClick={()=>setMenu(true)} style={{background:"none",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",gap:"5px",padding:"8px"}}>
+          {[0,1,2].map(i=><div key={i} style={{width:i===1?"20px":"28px",height:"1px",background:B.gold,transition:"all .3s"}}/>)}
+        </button>
+      </nav>
+      {menu&&(
+        <div className="overlay" onClick={()=>setMenu(false)}>
+          <div style={{textAlign:"center"}} onClick={e=>e.stopPropagation()}>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"11px",letterSpacing:"4px",color:"#C9A84C33",marginBottom:"44px"}}>GRAVITAS · PACTUM · TUTELA · ARBITRIUM</div>
+            {pages.map((p,i)=>(
+              <div key={p} style={{animationDelay:`${i*.07}s`,animation:"fadeUp .5s ease both"}}>
+                <button onClick={()=>{go(p);setMenu(false)}} style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"clamp(28px,6vw,52px)",fontWeight:300,color:page===p?B.gold:"#FAF6EE",background:"none",border:"none",cursor:"pointer",display:"block",width:"100%",padding:"7px 0",letterSpacing:"2px",transition:"all .3s",fontStyle:"italic"}}>{p}</button>
+              </div>
+            ))}
+            <button onClick={()=>setMenu(false)} style={{marginTop:"36px",fontFamily:"'Cinzel',serif",fontSize:"9px",letterSpacing:"3px",color:"#8899A6",background:"none",border:"none",cursor:"pointer"}}>✕ CLOSE</button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ─── HOME ───────────────────────────────────────
+function Home({go}) {
+  const [ti,setTi] = useState(0);
+  useEffect(()=>{const t=setInterval(()=>setTi(i=>(i+1)%TESTIMONIALS.length),5500);return()=>clearInterval(t)},[]);
+  const units = [
+    {label:"DESSY HoMA",sub:"House of Mediation & Arbitration",tag:"Resolve Before It Escalates.",col:"#1A3D6E",ac:B.dessyBrass,icon:"⚖",pg:"DESSY HOMA"},
+    {label:"ALLYSES",sub:"Premium Concierge",tag:"Excellence Finds Its Rhythm.",col:B.allyGreen,ac:B.allyGreenL,icon:"🗝",pg:"ALLYSES"},
+    {label:"Personal Primary",sub:"Healthcare Assistance",tag:"Care with Discretion, Heal with Trust.",col:B.theraBlue,ac:"#4A9ECC",icon:"✚",pg:"PERSONAL PRIMARY"},
+  ];
+  return (
+    <div style={{color:B.cream}}>
+      {/* HERO */}
+      <section style={{minHeight:"100vh",display:"flex",alignItems:"center",background:`radial-gradient(ellipse at 25% 50%,rgba(26,61,110,0.45) 0%,transparent 60%),linear-gradient(160deg,#08111A 0%,#0D1B2A 50%,#060E16 100%)`,padding:"110px 40px 60px",position:"relative",overflow:"hidden"}}>
+        {/* Decorative rings */}
+        <div style={{position:"absolute",top:"50%",right:"-120px",transform:"translateY(-50%)",width:"550px",height:"550px",border:"1px solid rgba(201,168,76,0.05)",borderRadius:"50%",pointerEvents:"none"}}/>
+        <div style={{position:"absolute",top:"50%",right:"-70px",transform:"translateY(-50%)",width:"380px",height:"380px",border:"1px solid rgba(201,168,76,0.04)",borderRadius:"50%",pointerEvents:"none"}}/>
+        {/* Floating dots */}
+        {[...Array(5)].map((_,i)=><div key={i} style={{position:"absolute",width:"3px",height:"3px",borderRadius:"50%",background:B.gold,opacity:.18,animation:`float ${3+i*.6}s ${i*.4}s ease-in-out infinite`,top:`${18+i*13}%`,left:`${12+i*9}%`,pointerEvents:"none"}}/>)}
+        <div style={{position:"absolute",bottom:0,left:0,right:0,height:"180px",background:`linear-gradient(to bottom,transparent,${B.bg})`,pointerEvents:"none"}}/>
+
+        <div style={{maxWidth:"1100px",margin:"0 auto",width:"100%"}}>
+          <div className="fu1"><SL>PRECISE · CONFIDANT · ATTUNED</SL></div>
+          <h1 className="fu2" style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"clamp(48px,8.5vw,100px)",fontWeight:300,lineHeight:1.02,letterSpacing:"-0.5px",marginBottom:"6px"}}>
+            Where Wisdom<br/><span style={{fontStyle:"italic",color:B.gold}}>Meets Resolution.</span>
+          </h1>
+          <div className="fu3" style={{maxWidth:"520px",marginTop:"26px"}}>
+            <p style={{fontFamily:"'Jost',sans-serif",fontSize:"15px",lineHeight:1.9,color:B.ash,fontWeight:300}}>
+              PT Mahana Zigma Indonesia — ekosistem jasa profesional premium yang hadir utuh dalam kehidupan klien: dari pencegahan sengketa, pengaturan kehidupan eksekutif, hingga perawatan kesehatan keluarga yang holistik dan diskret.
+            </p>
+          </div>
+          <div className="fu4" style={{display:"flex",gap:"14px",marginTop:"40px",flexWrap:"wrap"}}>
+            <button className="btn-g" onClick={()=>go("MAHANA")}>DISCOVER THE ECOSYSTEM</button>
+            <button className="btn-o" onClick={()=>go("CONTACT")}>PRIVATE CONSULTATION</button>
+          </div>
+
+          {/* Three unit cards */}
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"16px",marginTop:"68px"}}>
+            {units.map(u=>(
+              <div key={u.label} className="card" onClick={()=>go(u.pg)}
+                style={{background:`linear-gradient(160deg,${u.col}66 0%,rgba(8,17,26,0.95) 100%)`,border:`1px solid ${u.ac}22`,borderRadius:"2px",padding:"28px 22px"}}>
+                <div style={{fontSize:"22px",marginBottom:"12px"}}>{u.icon}</div>
+                <div style={{fontFamily:"'Cinzel',serif",fontSize:"12px",letterSpacing:"2px",color:B.cream,marginBottom:"4px"}}>{u.label}</div>
+                <div style={{fontFamily:"'Jost',sans-serif",fontSize:"9px",color:B.ash,letterSpacing:"1.5px",marginBottom:"16px"}}>{u.sub}</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"14px",fontStyle:"italic",color:u.ac,lineHeight:1.4}}>{u.tag}</div>
+                <Div/>
+                <div style={{fontFamily:"'Cinzel',serif",fontSize:"8px",letterSpacing:"2px",color:`${u.ac}88`}}>EXPLORE →</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* DNA */}
+      <section style={{padding:"96px 40px",background:B.bg}}>
+        <div style={{maxWidth:"1100px",margin:"0 auto"}}>
+          <div style={{textAlign:"center",marginBottom:"60px"}}>
+            <SL>OUR DNA</SL>
+            <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"clamp(30px,5vw,54px)",fontWeight:300,lineHeight:1.2}}>
+              Three Principles.<br/><span style={{fontStyle:"italic",color:B.gold}}>One Sacred Promise.</span>
+            </h2>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"2px"}}>
+            {DNA.map((d,i)=>(
+              <div key={i} className="dcard" style={{background:"rgba(255,255,255,0.015)",padding:"44px 32px"}}>
+                <div style={{fontFamily:"'Cinzel',serif",fontSize:"28px",color:`${B.gold}33`,marginBottom:"18px"}}>{d.icon}</div>
+                <div style={{fontFamily:"'Cinzel',serif",fontSize:"8px",letterSpacing:"3px",color:B.gold,marginBottom:"7px"}}>{d.latin}</div>
+                <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"34px",fontWeight:300,color:B.cream,marginBottom:"5px"}}>{d.word}</h3>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"13px",fontStyle:"italic",color:`${B.gold}77`,marginBottom:"18px"}}>{d.tagline}</div>
+                <GL/>
+                <p style={{fontFamily:"'Jost',sans-serif",fontSize:"12px",lineHeight:1.8,color:B.ash,fontWeight:300}}>{d.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* TESTIMONIAL */}
+      <section style={{padding:"80px 40px",background:`linear-gradient(135deg,${B.navy},${B.bg})`}}>
+        <div style={{maxWidth:"760px",margin:"0 auto",textAlign:"center"}}>
+          <SL>CLIENT VOICES</SL>
+          <div style={{minHeight:"150px",transition:"all .5s"}}>
+            <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"clamp(17px,3vw,25px)",fontStyle:"italic",fontWeight:300,color:B.cream,lineHeight:1.65,marginBottom:"28px"}}>
+              "{TESTIMONIALS[ti].q}"
+            </p>
+            <div style={{fontFamily:"'Cinzel',serif",fontSize:"10px",letterSpacing:"2px",color:TESTIMONIALS[ti].c,marginBottom:"4px"}}>{TESTIMONIALS[ti].name}</div>
+            <div style={{fontFamily:"'Jost',sans-serif",fontSize:"11px",color:B.ash}}>{TESTIMONIALS[ti].co} · <span style={{color:`${TESTIMONIALS[ti].c}88`}}>{TESTIMONIALS[ti].unit}</span></div>
+          </div>
+          <div style={{display:"flex",gap:"10px",justifyContent:"center",marginTop:"28px"}}>
+            {TESTIMONIALS.map((_,i)=><div key={i} className={`tdot ${i===ti?"act":""}`} onClick={()=>setTi(i)}/>)}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section style={{padding:"96px 40px",textAlign:"center",background:B.bg,borderTop:"1px solid rgba(201,168,76,0.07)"}}>
+        <SL>BEGIN YOUR JOURNEY</SL>
+        <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"clamp(26px,5vw,50px)",fontWeight:300,marginBottom:"14px"}}>
+          Ready for a different kind of<br/><span style={{fontStyle:"italic",color:B.gold}}>professional service?</span>
+        </h2>
+        <p style={{fontFamily:"'Jost',sans-serif",fontSize:"13px",color:B.ash,marginBottom:"36px",maxWidth:"460px",margin:"14px auto 36px",lineHeight:1.8}}>
+          Konsultasi awal yang sepenuhnya rahasia. Tidak ada komitmen — hanya percakapan yang benar-benar mengenal Anda.
+        </p>
+        <button className="btn-g" onClick={()=>go("CONTACT")}>REQUEST A PRIVATE CONSULTATION</button>
+      </section>
+    </div>
+  );
+}
+
+// ─── MAHANA (HOLDING) ────────────────────────────
+function Mahana({go}) {
+  const units=[
+    {n:"DESSY HoMA",s:"House of Mediation & Arbitration",t:"Resolve Before It Escalates.",col:B.dessyBg,ac:B.dessyBrass,icon:"⚖",pg:"DESSY HOMA",url:"odrlink.id"},
+    {n:"ALLYSES",s:"Premium Concierge",t:"Excellence Finds Its Rhythm.",col:B.allyBg,ac:B.allyGreenL,icon:"🗝",pg:"ALLYSES",url:"allyses.id"},
+    {n:"Personal Primary",s:"Healthcare Assistance",t:"Care with Discretion, Heal with Trust.",col:B.theraBg,ac:"#4A9ECC",icon:"✚",pg:"PERSONAL PRIMARY",url:"theramedicare.id"},
+  ];
+  return (
+    <div style={{color:B.cream,paddingTop:"68px"}}>
+      {/* Hero */}
+      <section style={{padding:"72px 40px 60px",background:`linear-gradient(160deg,${B.navy},${B.bg})`}}>
+        <div style={{maxWidth:"1100px",margin:"0 auto"}}>
+          <div className="fu1"><SL>HOLDING COMPANY · ONE PACIFIC PLACE, SCBD</SL></div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"60px",alignItems:"start"}}>
+            <div>
+              <h1 className="fu2" style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"clamp(36px,5vw,62px)",fontWeight:300,lineHeight:1.08,marginBottom:"8px"}}>
+                PT Mahana<br/><span style={{fontStyle:"italic",color:B.gold}}>Zigma Indonesia</span>
+              </h1>
+              <div style={{fontFamily:"'Cinzel',serif",fontSize:"9px",letterSpacing:"3px",color:"#C9A84C44",margin:"14px 0 24px"}}>GRAVITAS · PACTUM · TUTELA · ARBITRIUM</div>
+              <p style={{fontFamily:"'Jost',sans-serif",fontSize:"14px",lineHeight:1.9,color:B.ash,fontWeight:300,marginBottom:"16px"}}>
+                Ekosistem jasa profesional premium yang mengintegrasikan tiga pilar unggulan dalam satu atap: penyelesaian sengketa, layanan concierge eksekutif, dan kesehatan keluarga integratif.
+              </p>
+              <p style={{fontFamily:"'Jost',sans-serif",fontSize:"14px",lineHeight:1.9,color:B.ash,fontWeight:300}}>
+                Dibangun di atas fondasi integritas, keahlian multidisiplin, dan kepercayaan yang tidak dapat dikompromikan — hadir utuh dalam kehidupan klien yang paling kami hormati.
+              </p>
+            </div>
+            <div style={{background:"rgba(201,168,76,0.03)",border:"1px solid rgba(201,168,76,0.14)",padding:"36px"}}>
+              <SL>VISI</SL>
+              <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"17px",fontStyle:"italic",fontWeight:300,color:B.cream,lineHeight:1.7,marginBottom:"24px"}}>
+                "Menjadi ekosistem jasa profesional terpercaya yang menyentuh setiap dimensi kehidupan klien — dari resolusi konflik hukum hingga kepenuhan kesehatan jiwa dan raganya."
+              </p>
+              <Div/>
+              <SL>DNA KAMI</SL>
+              {["PRECISE — Surgical clarity. Zero waste.","CONFIDANT — Your trust is sacred to us.","ATTUNED — We know you before you speak."].map((m,i)=>(
+                <div key={i} style={{display:"flex",gap:"12px",marginBottom:"12px"}}>
+                  <span style={{color:B.gold,fontSize:"8px",marginTop:"5px",flexShrink:0}}>◈</span>
+                  <span style={{fontFamily:"'EB Garamond',serif",fontSize:"14px",color:B.ash,lineHeight:1.6}}>{m}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* DNA detail */}
+      <section style={{padding:"80px 40px",background:B.bg}}>
+        <div style={{maxWidth:"1100px",margin:"0 auto"}}>
+          <div style={{textAlign:"center",marginBottom:"52px"}}>
+            <SL>UNIFIED DNA — THE THREAD THAT RUNS THROUGH EVERYTHING</SL>
+            <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"clamp(26px,4vw,44px)",fontWeight:300}}>Tiga Prinsip. Satu Ekosistem.</h2>
+          </div>
+          {DNA.map((d,i)=>(
+            <div key={i} style={{display:"grid",gridTemplateColumns:"180px 1fr",gap:"44px",marginBottom:"24px",padding:"36px",background:"rgba(255,255,255,0.014)",border:"1px solid rgba(201,168,76,0.07)",borderRadius:"2px"}}>
+              <div style={{borderRight:"1px solid rgba(201,168,76,0.1)",paddingRight:"36px"}}>
+                <div style={{fontFamily:"'Cinzel',serif",fontSize:"8px",letterSpacing:"3px",color:B.gold,marginBottom:"7px"}}>{d.latin}</div>
+                <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"36px",fontWeight:300,color:B.cream,marginBottom:"4px"}}>{d.word}</h3>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"13px",fontStyle:"italic",color:`${B.gold}66`}}>{d.tagline}</div>
+              </div>
+              <div>
+                <p style={{fontFamily:"'Jost',sans-serif",fontSize:"13px",lineHeight:1.8,color:B.ash,marginBottom:"20px"}}>{d.desc}</p>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"12px"}}>
+                  {d.how.map((h,j)=>(
+                    <div key={j} style={{padding:"14px",background:"rgba(201,168,76,0.03)",borderLeft:"2px solid rgba(201,168,76,0.18)"}}>
+                      <div style={{fontFamily:"'Cinzel',serif",fontSize:"7px",letterSpacing:"2px",color:B.gold,marginBottom:"7px"}}>{h.u}</div>
+                      <div style={{fontFamily:"'Jost',sans-serif",fontSize:"11px",color:B.ash,lineHeight:1.6}}>{h.t}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Units */}
+      <section style={{padding:"80px 40px",background:`linear-gradient(135deg,${B.navy},${B.bg})`}}>
+        <div style={{maxWidth:"1100px",margin:"0 auto"}}>
+          <SL>THREE BUSINESS UNITS</SL>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"20px"}}>
+            {units.map(u=>(
+              <div key={u.n} className="card" onClick={()=>go(u.pg)}
+                style={{background:`linear-gradient(160deg,${u.col}CC,rgba(8,17,26,0.97))`,border:`1px solid ${u.ac}22`,padding:"38px 28px",borderRadius:"2px"}}>
+                <div style={{fontSize:"28px",marginBottom:"16px"}}>{u.icon}</div>
+                <div style={{fontFamily:"'Cinzel',serif",fontSize:"13px",letterSpacing:"2px",color:B.cream,marginBottom:"4px"}}>{u.n}</div>
+                <div style={{fontFamily:"'Jost',sans-serif",fontSize:"9px",letterSpacing:"1.5px",color:B.ash,marginBottom:"18px"}}>{u.s}</div>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"17px",fontStyle:"italic",color:u.ac,marginBottom:"6px"}}>{u.t}</div>
+                <Div/>
+                <div style={{fontFamily:"'Cinzel',serif",fontSize:"8px",letterSpacing:"2px",color:`${u.ac}77`}}>EXPLORE · {u.url}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Platform */}
+      <section style={{padding:"80px 40px",background:B.bg}}>
+        <div style={{maxWidth:"1100px",margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:"56px",alignItems:"center"}}>
+          <div>
+            <SL>INTEGRATED ECOSYSTEM PLATFORM</SL>
+            <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"clamp(26px,4vw,42px)",fontWeight:300,marginBottom:"18px"}}>
+              Mahana Client<br/><span style={{fontStyle:"italic",color:B.gold}}>Ecosystem Portal</span>
+            </h2>
+            <p style={{fontFamily:"'Jost',sans-serif",fontSize:"13px",color:B.ash,lineHeight:1.8,marginBottom:"24px"}}>
+              Satu portal yang menghubungkan tiga layanan dalam satu pengalaman yang mulus — tanpa duplikasi cerita, tanpa friksi antar layanan, dengan privasi yang terjaga di setiap lapisan.
+            </p>
+            <div style={{fontFamily:"'Cinzel',serif",fontSize:"11px",color:B.gold,letterSpacing:"1px"}}>🌐 mahana.id</div>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
+            {["Single Sign-On — satu akun untuk tiga layanan","Privacy-first architecture — data sovereignty Indonesia","Cross-unit care coordination tanpa duplikasi cerita","Encrypted client vault — dokumen, rekam medis, kontrak","Proactive alert system — jadwal, tenggat, risiko kesehatan","Dedicated Relationship Officer per klien"].map((f,i)=>(
+              <div key={i} style={{display:"flex",gap:"13px",padding:"14px 16px",background:"rgba(255,255,255,0.018)",border:"1px solid rgba(201,168,76,0.06)"}}>
+                <span style={{color:B.gold,fontSize:"8px",marginTop:"4px",flexShrink:0}}>▸</span>
+                <span style={{fontFamily:"'Jost',sans-serif",fontSize:"12px",color:B.ash,lineHeight:1.5}}>{f}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// ─── UNIT PAGE ───────────────────────────────────
+function UnitPage({uid,go}) {
+  const u = UNITS_DATA[uid];
+  const [tab,setTab] = useState(0);
+  const tabs = [{k:"precise",l:"PRECISE"},{k:"confidant",l:"CONFIDANT"},{k:"attuned",l:"ATTUNED"}];
+
+  const isDessy = uid==="dessy";
+  const isAlly = uid==="allyses";
+  const isThera = uid==="thera";
+
+  // Brand-specific header gradients
+  const headerBg = isDessy
+    ? `radial-gradient(ellipse at 20% 50%,rgba(26,61,110,0.7) 0%,transparent 60%),linear-gradient(160deg,#08111A,#0A1828)`
+    : isAlly
+    ? `radial-gradient(ellipse at 20% 50%,rgba(30,92,50,0.6) 0%,transparent 60%),linear-gradient(160deg,#08111A,${B.allyBg})`
+    : `radial-gradient(ellipse at 20% 50%,rgba(26,74,122,0.5) 0%,transparent 60%),linear-gradient(160deg,#08111A,${B.theraBg})`;
+
+  return (
+    <div style={{color:B.cream,paddingTop:"68px"}}>
+      {/* HERO */}
+      <section style={{minHeight:"82vh",display:"flex",alignItems:"flex-end",background:headerBg,padding:"72px 40px 56px",position:"relative",overflow:"hidden"}}>
+        {/* Big background icon */}
+        <div style={{position:"absolute",top:"50%",right:"-60px",transform:"translateY(-50%)",fontSize:"220px",opacity:.025,fontFamily:"'Cinzel',serif",lineHeight:1,userSelect:"none",color:u.accent}}>
+          {isDessy?"⚖":isAlly?"A":"✚"}
+        </div>
+
+        <div style={{maxWidth:"1100px",margin:"0 auto",width:"100%"}}>
+          <div style={{fontFamily:"'Cinzel',serif",fontSize:"8px",letterSpacing:"3px",color:"#8899A6",marginBottom:"10px"}}>
+            UNIT BISNIS · PT MAHANA ZIGMA INDONESIA · <span style={{color:u.accent}}>🌐 {u.url}</span>
+          </div>
+
+          {/* DESSY specific brass styling */}
+          {isDessy && (
+            <div style={{display:"inline-block",background:"linear-gradient(135deg,rgba(180,140,30,0.15),rgba(201,160,48,0.08))",border:"1px solid rgba(201,160,48,0.3)",padding:"4px 14px",marginBottom:"12px"}}>
+              <span style={{fontFamily:"'Cinzel',serif",fontSize:"8px",letterSpacing:"3px",color:B.dessyBrass}}>GRAVITAS · PACTUM · TUTELA · ARBITRIUM</span>
+            </div>
+          )}
+          {isAlly && (
+            <div style={{display:"inline-block",background:"rgba(46,139,74,0.1)",border:"1px solid rgba(46,139,74,0.25)",padding:"4px 14px",marginBottom:"12px"}}>
+              <span style={{fontFamily:"'Cinzel',serif",fontSize:"8px",letterSpacing:"3px",color:B.allyGreenL}}>EXCELLENCE FINDS ITS RHYTHM</span>
+            </div>
+          )}
+          {isThera && (
+            <div style={{display:"inline-block",background:"rgba(26,74,122,0.12)",border:"1px solid rgba(74,158,204,0.25)",padding:"4px 14px",marginBottom:"12px"}}>
+              <span style={{fontFamily:"'Cinzel',serif",fontSize:"8px",letterSpacing:"3px",color:"#4A9ECC"}}>CARE WITH DISCRETION · HEAL WITH TRUST</span>
+            </div>
+          )}
+
+          <h1 style={{fontFamily:"'Cinzel',serif",fontSize:"clamp(22px,5vw,50px)",fontWeight:600,letterSpacing:"4px",color:B.cream,marginBottom:"6px"}}>{u.name}</h1>
+          <div style={{fontFamily:"'Jost',sans-serif",fontSize:"10px",letterSpacing:"2px",color:`${u.accent}88`,marginBottom:"20px"}}>{u.full}</div>
+
+          <div style={{marginBottom:"28px"}}>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"clamp(26px,5vw,54px)",fontStyle:"italic",fontWeight:300,color:B.cream,lineHeight:1.1}}>
+              {u.tagline}{u.tagline2?" ":""}{u.tagline2}
+            </div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"clamp(14px,2vw,20px)",fontStyle:"italic",fontWeight:300,color:B.ash,marginTop:"4px"}}>{u.taglineID}</div>
+          </div>
+
+          <p style={{fontFamily:"'Jost',sans-serif",fontSize:"14px",lineHeight:1.9,color:B.ash,maxWidth:"600px",marginBottom:"36px"}}>{u.positioning}</p>
+
+          <div style={{display:"flex",gap:"14px"}}>
+            <button className="btn-g" onClick={()=>go("CONTACT")}>KONSULTASI RAHASIA</button>
+            <button className="btn-o">🌐 {u.url}</button>
+          </div>
+        </div>
+      </section>
+
+      {/* DNA TABS */}
+      <section style={{padding:"72px 40px",background:B.bg}}>
+        <div style={{maxWidth:"1100px",margin:"0 auto"}}>
+          <SL c={u.accent}>DNA DALAM PRAKTIK — BAGAIMANA KAMI HADIR UNTUK ANDA</SL>
+          <div style={{display:"flex",gap:"0",borderBottom:"1px solid rgba(201,168,76,0.12)",marginBottom:"36px"}}>
+            {tabs.map((t,i)=>(
+              <button key={i} onClick={()=>setTab(i)} style={{fontFamily:"'Cinzel',serif",fontSize:"9px",letterSpacing:"3px",padding:"14px 28px",background:"none",border:"none",cursor:"pointer",color:tab===i?u.accent:B.ash,borderBottom:`2px solid ${tab===i?u.accent:"transparent"}`,transition:"all .3s"}}>
+                {t.l}
+              </button>
+            ))}
+          </div>
+          <div style={{padding:"32px",background:"rgba(255,255,255,0.018)",border:`1px solid ${u.accentSoft||"rgba(201,168,76,0.08)"}`}}>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"21px",fontStyle:"italic",color:B.cream,marginBottom:"16px"}}>{u[tabs[tab].k]}</div>
+            <div style={{fontFamily:"'Jost',sans-serif",fontSize:"13px",color:B.ash,lineHeight:1.75}}>
+              {tab===0 && "Presisi adalah bentuk pertama dari rasa hormat kami terhadap klien. Setiap langkah dikalibrasi tepat — tidak ada langkah yang terbuang, tidak ada asumsi yang diambil tanpa dasar."}
+              {tab===1 && "Kami bukan sekadar penyedia jasa. Kami adalah confidant — sosok tepercaya yang menyimpan kepercayaan Anda dengan standar hukum, etika, dan kehormatan tertinggi yang tidak dapat dikompromikan."}
+              {tab===2 && "Kami bergerak bersama irama kehidupan Anda. Kami tidak menunggu Anda memberitahu kami — kami sudah mengenal konteks, preferensi, dan tujuan jangka panjang Anda, dan kami mengantisipasi sebelum Anda meminta."}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SERVICES + SPECIFICS */}
+      <section style={{padding:"72px 40px",background:`linear-gradient(135deg,${B.navy},${B.bg})`}}>
+        <div style={{maxWidth:"1100px",margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:"56px"}}>
+          <div>
+            <SL c={u.accent}>LAYANAN</SL>
+            <h2 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"clamp(22px,3.5vw,36px)",fontWeight:300,marginBottom:"28px"}}>
+              Apa yang Kami<br/><span style={{fontStyle:"italic",color:u.iconColor||u.accent}}>Tawarkan</span>
+            </h2>
+            <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
+              {u.services.map((s,i)=>(
+                <div key={i} style={{display:"flex",gap:"13px",padding:"12px 15px",background:"rgba(255,255,255,0.018)",border:"1px solid rgba(201,168,76,0.05)",transition:"all .3s"}}
+                  onMouseEnter={e=>e.currentTarget.style.borderColor="rgba(201,168,76,0.22)"}
+                  onMouseLeave={e=>e.currentTarget.style.borderColor="rgba(201,168,76,0.05)"}>
+                  <span style={{color:u.accent,fontSize:"7px",marginTop:"5px"}}>◈</span>
+                  <span style={{fontFamily:"'Jost',sans-serif",fontSize:"12px",color:B.ash}}>{s}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{display:"flex",flexDirection:"column",gap:"18px"}}>
+            {/* DESSY: niches */}
+            {isDessy && u.niches && (
+              <div>
+                <SL c={u.accent}>NICHE SPESIALISASI</SL>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"18px"}}>
+                  {u.niches.map((n,i)=>(
+                    <div key={i} style={{padding:"16px 14px",background:"rgba(201,160,48,0.05)",border:`1px solid ${n.c}22`}}>
+                      <div style={{fontFamily:"'Cinzel',serif",fontSize:"7px",letterSpacing:"2px",color:`${n.c}66`,marginBottom:"5px"}}>{n.tag}</div>
+                      <div style={{fontFamily:"'Jost',sans-serif",fontSize:"11px",color:B.cream}}>{n.n}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ALLYSES: tiers — Emerald/Gold/Silver with correct branding */}
+            {isAlly && u.tiers && (
+              <div>
+                <SL c={u.accent}>MEMBERSHIP TIERS</SL>
+                <div style={{display:"flex",flexDirection:"column",gap:"10px",marginBottom:"18px"}}>
+                  {u.tiers.map((t,i)=>(
+                    <div key={i} style={{display:"flex",gap:"16px",alignItems:"center",padding:"18px 20px",background:t.bg,border:`1px solid ${t.c}44`}}>
+                      <div style={{width:"10px",height:"10px",borderRadius:"50%",background:t.c,flexShrink:0,boxShadow:`0 0 8px ${t.c}66`}}/>
+                      <div>
+                        <div style={{fontFamily:"'Cinzel',serif",fontSize:"11px",letterSpacing:"2px",color:t.c,marginBottom:"3px"}}>{t.t}</div>
+                        <div style={{fontFamily:"'Jost',sans-serif",fontSize:"11px",color:B.ash}}>{t.d}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* THERAMEDICARE: pillars */}
+            {isThera && u.pillars && (
+              <div>
+                <SL c={u.accent}>EMPAT PILAR</SL>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px",marginBottom:"18px"}}>
+                  {u.pillars.map((p,i)=>(
+                    <div key={i} style={{padding:"18px 14px",background:"rgba(255,255,255,0.018)",border:`1px solid ${p.c}22`}}>
+                      <div style={{fontFamily:"'Cinzel',serif",fontSize:"9px",letterSpacing:"1px",color:p.c,marginBottom:"7px"}}>{p.p}</div>
+                      <div style={{fontFamily:"'Jost',sans-serif",fontSize:"11px",color:B.ash,lineHeight:1.55}}>{p.d}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Platform box */}
+            <div style={{padding:"24px",background:u.accentSoft||"rgba(201,168,76,0.04)",border:`1px solid ${u.accent}44`}}>
+              <SL c={u.accent}>DIGITAL PLATFORM</SL>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"18px",color:B.cream,marginBottom:"8px"}}>{u.platform.name}</div>
+              <div style={{fontFamily:"'Jost',sans-serif",fontSize:"11px",color:B.ash,lineHeight:1.65,marginBottom:"14px"}}>{u.platform.desc}</div>
+              <div style={{display:"flex",flexDirection:"column",gap:"7px",marginBottom:"14px"}}>
+                {u.platform.features.map((f,i)=>(
+                  <div key={i} style={{display:"flex",gap:"10px"}}>
+                    <span style={{color:u.accent,fontSize:"7px",marginTop:"4px"}}>▸</span>
+                    <span style={{fontFamily:"'Jost',sans-serif",fontSize:"11px",color:B.ash}}>{f}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{fontFamily:"'Cinzel',serif",fontSize:"9px",color:u.accent}}>🌐 {u.url}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Revenue + CTA */}
+      <section style={{padding:"56px 40px",background:B.bg}}>
+        <div style={{maxWidth:"1100px",margin:"0 auto"}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"36px",alignItems:"center"}}>
+            <div>
+              <SL c={u.accent}>MODEL PENDAPATAN</SL>
+              <div style={{display:"flex",flexWrap:"wrap",gap:"9px"}}>
+                {u.revenue.map((r,i)=>(
+                  <div key={i} style={{padding:"9px 14px",background:`${u.accentSoft||"rgba(201,168,76,0.06)"}`,border:`1px solid ${u.accent}33`,fontFamily:"'Jost',sans-serif",fontSize:"11px",color:u.accent}}>{r}</div>
+                ))}
+              </div>
+            </div>
+            <div style={{textAlign:"right"}}>
+              <p style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"16px",fontStyle:"italic",color:B.ash,marginBottom:"20px"}}>
+                "Semua yang Anda sampaikan kepada kami terlindungi sepenuhnya."
+              </p>
+              <button className="btn-g" onClick={()=>go("CONTACT")}>MULAI PERCAKAPAN RAHASIA →</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// ─── CONTACT ─────────────────────────────────────
+function Contact() {
+  const [form,setForm] = useState({name:"",org:"",email:"",interest:"",msg:""});
+  const [sent,setSent] = useState(false);
+  return (
+    <div style={{color:B.cream,paddingTop:"68px"}}>
+      <section style={{minHeight:"100vh",padding:"72px 40px",background:`radial-gradient(ellipse at 65% 30%,rgba(26,61,110,0.4) 0%,transparent 55%),linear-gradient(160deg,${B.navy},${B.bg})`}}>
+        <div style={{maxWidth:"1100px",margin:"0 auto"}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"72px"}}>
+            {/* Left */}
+            <div>
+              <SL>PRIVATE CONSULTATION</SL>
+              <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"clamp(34px,5vw,60px)",fontWeight:300,lineHeight:1.08,marginBottom:"18px"}}>
+                Setiap percakapan<br/><span style={{fontStyle:"italic",color:B.gold}}>dimulai dari sini.</span>
+              </h1>
+              <p style={{fontFamily:"'Jost',sans-serif",fontSize:"13px",color:B.ash,lineHeight:1.9,marginBottom:"36px"}}>
+                Tidak ada formulir yang terlalu panjang, tidak ada komitmen di awal. Hanya percakapan yang sepenuhnya rahasia — untuk memahami kebutuhan Anda dan menentukan apakah kami adalah mitra yang tepat.
+              </p>
+              <Div/>
+              {[
+                {l:"KANTOR",v:"One Pacific Place, SCBD, Jakarta Selatan"},
+                {l:"MAHANA PORTAL",v:"mahana.id"},
+                {l:"DESSY HoMA",v:"odrlink.id"},
+                {l:"ALLYSES",v:"allyses.id"},
+                {l:"PERSONAL PRIMARY",v:"theramedicare.id"},
+              ].map((c,i)=>(
+                <div key={i} style={{display:"flex",gap:"18px",marginBottom:"14px"}}>
+                  <div style={{fontFamily:"'Cinzel',serif",fontSize:"7px",letterSpacing:"2px",color:B.gold,width:"130px",flexShrink:0,marginTop:"3px"}}>{c.l}</div>
+                  <div style={{fontFamily:"'Jost',sans-serif",fontSize:"12px",color:B.ash}}>{c.v}</div>
+                </div>
+              ))}
+              <div style={{marginTop:"36px",padding:"22px",background:"rgba(201,168,76,0.03)",border:"1px solid rgba(201,168,76,0.14)",fontFamily:"'Cormorant Garamond',serif",fontSize:"15px",fontStyle:"italic",color:"#FAF6EE88",lineHeight:1.7}}>
+                "Semua yang Anda sampaikan kepada kami terlindungi sepenuhnya. Kerahasiaan bukan hanya kebijakan — ini adalah kehormatan kami."
+              </div>
+            </div>
+
+            {/* Right form */}
+            {sent ? (
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"60px 40px"}}>
+                <div style={{fontFamily:"'Cinzel',serif",fontSize:"36px",color:B.gold,marginBottom:"20px"}}>◈</div>
+                <h3 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"30px",fontWeight:300,marginBottom:"12px"}}>Pesan Anda Diterima.</h3>
+                <p style={{fontFamily:"'Jost',sans-serif",fontSize:"13px",color:B.ash,lineHeight:1.8}}>Tim kami akan menghubungi Anda dalam 1×24 jam. Percakapan ini sepenuhnya rahasia.</p>
+              </div>
+            ) : (
+              <div style={{display:"flex",flexDirection:"column",gap:"15px"}}>
+                <SL>FORMULIR KONSULTASI RAHASIA</SL>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}>
+                  <div>
+                    <div style={{fontFamily:"'Cinzel',serif",fontSize:"7px",letterSpacing:"2px",color:"#C9A84C55",marginBottom:"7px"}}>NAMA LENGKAP</div>
+                    <input placeholder="Nama Anda" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
+                  </div>
+                  <div>
+                    <div style={{fontFamily:"'Cinzel',serif",fontSize:"7px",letterSpacing:"2px",color:"#C9A84C55",marginBottom:"7px"}}>ORGANISASI</div>
+                    <input placeholder="Perusahaan / Institusi" value={form.org} onChange={e=>setForm({...form,org:e.target.value})}/>
+                  </div>
+                </div>
+                <div>
+                  <div style={{fontFamily:"'Cinzel',serif",fontSize:"7px",letterSpacing:"2px",color:"#C9A84C55",marginBottom:"7px"}}>EMAIL</div>
+                  <input placeholder="email@domain.com" value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/>
+                </div>
+                <div>
+                  <div style={{fontFamily:"'Cinzel',serif",fontSize:"7px",letterSpacing:"2px",color:"#C9A84C55",marginBottom:"7px"}}>LAYANAN YANG DIMINATI</div>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"8px"}}>
+                    {["DESSY HoMA","ALLYSES","Personal Primary","Ekosistem Penuh","Lainnya"].map(opt=>(
+                      <div key={opt} onClick={()=>setForm({...form,interest:opt})}
+                        style={{padding:"11px",background:form.interest===opt?"rgba(201,168,76,0.13)":"rgba(255,255,255,0.02)",border:`1px solid ${form.interest===opt?B.gold:"rgba(201,168,76,0.1)"}`,cursor:"pointer",fontFamily:"'Cinzel',serif",fontSize:"7px",letterSpacing:"1px",color:form.interest===opt?B.gold:B.ash,textAlign:"center",transition:"all .2s"}}>
+                        {opt}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div style={{fontFamily:"'Cinzel',serif",fontSize:"7px",letterSpacing:"2px",color:"#C9A84C55",marginBottom:"7px"}}>CERITAKAN KEBUTUHAN ANDA</div>
+                  <textarea rows={5} placeholder="Apa yang ingin Anda diskusikan? Semua yang Anda sampaikan sepenuhnya rahasia." value={form.msg} onChange={e=>setForm({...form,msg:e.target.value})} style={{resize:"vertical"}}/>
+                </div>
+                <div style={{display:"flex",gap:"12px",alignItems:"center"}}>
+                  <span style={{fontFamily:"'Jost',sans-serif",fontSize:"10px",color:"#8899A633",flex:1,lineHeight:1.5}}>🔒 Dilindungi UU PDP 2022. Informasi Anda tidak akan pernah dibagikan.</span>
+                  <button className="btn-g" onClick={()=>setSent(true)}>KIRIM →</button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// ─── FOOTER ──────────────────────────────────────
+function Footer({go}) {
+  return (
+    <footer style={{background:"#050C13",borderTop:"1px solid rgba(201,168,76,0.08)",padding:"56px 40px 28px"}}>
+      <div style={{maxWidth:"1100px",margin:"0 auto"}}>
+        <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",gap:"36px",marginBottom:"44px"}}>
+          <div>
+            <div style={{fontFamily:"'Cinzel',serif",fontSize:"12px",letterSpacing:"3px",color:B.gold,marginBottom:"6px"}}>MAHANA ZIGMA</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:"12px",fontStyle:"italic",color:"#C9A84C33",marginBottom:"18px"}}>Gravitas · Pactum · Tutela · Arbitrium</div>
+            <p style={{fontFamily:"'Jost',sans-serif",fontSize:"11px",color:"#8899A633",lineHeight:1.8}}>PT Mahana Zigma Indonesia<br/>One Pacific Place, SCBD<br/>Jakarta Selatan, Indonesia</p>
+          </div>
+          {[
+            {h:"ECOSYSTEM",links:[["MAHANA","MAHANA"],["DESSY HoMA","DESSY HOMA"],["ALLYSES","ALLYSES"],["Personal Primary","PERSONAL PRIMARY"]]},
+            {h:"PLATFORMS",links:[["mahana.id","MAHANA"],["odrlink.id","DESSY HOMA"],["allyses.id","ALLYSES"],["theramedicare.id","PERSONAL PRIMARY"]]},
+            {h:"CONNECT",links:[["Konsultasi Rahasia","CONTACT"],["About Mahana","MAHANA"],["Karir","CONTACT"],["Media","CONTACT"]]},
+          ].map((col,i)=>(
+            <div key={i}>
+              <div style={{fontFamily:"'Cinzel',serif",fontSize:"7px",letterSpacing:"3px",color:"#C9A84C77",marginBottom:"14px"}}>{col.h}</div>
+              {col.links.map(([label,target])=>(
+                <div key={label} onClick={()=>go(target)} style={{fontFamily:"'Jost',sans-serif",fontSize:"11px",color:B.ash,marginBottom:"9px",cursor:"pointer",transition:"color .3s"}}
+                  onMouseEnter={e=>e.target.style.color=B.gold}
+                  onMouseLeave={e=>e.target.style.color=B.ash}>{label}</div>
+              ))}
+            </div>
+          ))}
+        </div>
+        <Div/>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:"14px",marginTop:"20px"}}>
+          <div style={{fontFamily:"'Jost',sans-serif",fontSize:"10px",color:"#8899A622"}}>© 2025 PT Mahana Zigma Indonesia. All rights reserved.</div>
+          <div style={{display:"flex",gap:"20px"}}>
+            {["PRECISE","CONFIDANT","ATTUNED"].map(d=><div key={d} style={{fontFamily:"'Cinzel',serif",fontSize:"7px",letterSpacing:"2px",color:"#C9A84C33"}}>{d}</div>)}
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+// ─── APP ─────────────────────────────────────────
+export default function App() {
+  const [page,setPage] = useState("HOME");
+  const [menu,setMenu] = useState(false);
+
+  const go = (p) => { setPage(p); window.scrollTo({top:0,behavior:"smooth"}); };
+
+  const uid = page==="DESSY HOMA"?"dessy":page==="ALLYSES"?"allyses":page==="PERSONAL PRIMARY"?"thera":null;
+
+  return (
+    <div style={{background:B.bg,minHeight:"100vh"}}>
+      <style>{FONTS}{CSS}</style>
+      <Nav page={page} go={go} menu={menu} setMenu={setMenu}/>
+      <div key={page} className="fi">
+        {page==="HOME"            && <Home go={go}/>}
+        {page==="MAHANA"          && <Mahana go={go}/>}
+        {uid                      && <UnitPage uid={uid} go={go}/>}
+        {page==="CONTACT"         && <Contact/>}
+      </div>
+      <Footer go={go}/>
+    </div>
+  );
+}
